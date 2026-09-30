@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OptiSight</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-card: rgba(18, 26, 47, 0.85);
+            --bg-card-border: rgba(56, 189, 248, 0.2);
+            --accent-cyan: #06b6d4;
+            --accent-teal: #14b8a6;
+            --accent-blue: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --dr-0: #10b981;
+            --dr-1: #eab308;
+            --dr-2: #f97316;
+            --dr-3: #ef4444;
+            --dr-4: #881337;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #111d38 0%, var(--bg-primary) 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 980px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge-header {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(6, 182, 212, 0.12);
+            border: 1px solid rgba(6, 182, 212, 0.35);
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.8rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 1rem;
+            padding: 1.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5), 0 8px 10px -6px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Patient name input */
+        .patient-field {
+            margin-bottom: 1rem;
+        }
+
+        .patient-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+            margin-bottom: 0.4rem;
+        }
+
+        .patient-field input {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .patient-field input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .patient-field input::placeholder { color: var(--text-secondary); }
+
+        .dropzone {
+            border: 2px dashed rgba(56, 189, 248, 0.3);
+            border-radius: 0.75rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(15, 23, 42, 0.5);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .dropzone svg {
+            width: 48px;
+            height: 48px;
+            color: var(--accent-cyan);
+            margin-bottom: 0.75rem;
+        }
+
+        .dropzone p.main-text {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .dropzone p.sub-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        #file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .preview-container {
+            margin-top: 1rem;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            object-fit: contain;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.85rem 1.5rem;
+            border-radius: 0.6rem;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1.25rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px 0 rgba(6, 182, 212, 0.4);
+        }
+
+        .btn:disabled {
+            background: #334155;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            color: #64748b;
+        }
+
+        /* Results */
+        .result-empty {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .result-content { display: none; }
+
+        .prediction-hero {
+            text-align: center;
+            padding: 1.25rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 1.25rem;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .confidence-stat {
+            margin-top: 0.6rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .confidence-val {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .prob-item { margin-bottom: 0.85rem; }
+
+        .prob-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            font-weight: 500;
+            margin-bottom: 0.35rem;
+        }
+
+        .prob-bar-bg {
+            height: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* Urgency badge */
+        .urgency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* Recommendations section */
+        .rec-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: none;
+        }
+
+        .rec-section h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rec-action-summary {
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            background: rgba(15,23,42,0.6);
+            border-left: 3px solid var(--accent-cyan);
+            padding: 0.65rem 0.9rem;
+            border-radius: 0 0.4rem 0.4rem 0;
+            margin-bottom: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .rec-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rec-list li {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            padding: 0.45rem 0 0.45rem 1.5rem;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .rec-list li:last-child { border-bottom: none; }
+
+        .rec-list li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* PDF Download button */
+        .btn-pdf {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.6rem;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-pdf:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px 0 rgba(99,102,241,0.4);
+        }
+
+        .pipeline-info {
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-width clinical panel below grid */
+        .clinical-panel {
+            display: none;
+            margin-top: 1.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Ophthalmology Clinical AI Engine
+            </div>
+            <h1>OptiSight</h1>
+            <p class="subtitle">Upload a retinal fundus photograph to perform automated border cropping, Ben Graham feature enhancement, and EfficientNetB0 severity staging with clinical action plan.</p>
+        </header>
+
+        <div class="grid">
+            <!-- Upload Box -->
+            <div class="card">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Fundus Image Upload
+                </h2>
+
+                <!-- Patient Name Input -->
+                <div class="patient-field">
+                    <label for="patient-name">Patient Name (Optional)</label>
+                    <input type="text" id="patient-name" placeholder="e.g. John Doe" autocomplete="name">
+                </div>
+
+                <div class="dropzone" id="dropzone">
+                    <input type="file" id="file-input" accept="image/*">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <p class="main-text">Drag &amp; drop retinal image here</p>
+                    <p class="sub-text">or click to browse files (JPEG, PNG, TIFF)</p>
+                </div>
+
+                <div class="preview-container" id="preview-container">
+                    <img id="preview-img" class="preview-img" alt="Preview">
+                </div>
+
+                <button class="btn" id="analyze-btn" disabled>
+                    <span class="spinner" id="btn-spinner"></span>
+                    <span id="btn-text">Run Diagnostic Inference</span>
+                </button>
+            </div>
+
+            <!-- Result Box -->
+            <div class="card">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Diagnostic Classification
+                </h2>
+
+                <div class="result-empty" id="result-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem; opacity: 0.4;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <p>No fundus photograph analyzed yet.<br>Upload an image to review severity breakdown.</p>
+                </div>
+
+                <div class="result-content" id="result-content">
+                    <!-- Prediction hero -->
+                    <div class="prediction-hero">
+                        <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-secondary);">Predicted DR Stage</div>
+                        <div class="severity-badge" id="badge-prediction">--</div>
+                        <div class="confidence-stat">Model Confidence: <span class="confidence-val" id="text-confidence">--%</span></div>
+                        <div style="margin-top:0.75rem;">
+                            <span class="urgency-badge" id="urgency-badge">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Probability bars -->
+                    <div style="margin-bottom:0.75rem;font-size:0.9rem;font-weight:600;">Probability Distribution</div>
+                    <div id="prob-bars"></div>
+
+                    <!-- Clinical Recommendations (inline) -->
+                    <div class="rec-section" id="rec-section">
+                        <h3>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            Clinical Action Plan
+                        </h3>
+                        <div class="rec-action-summary" id="rec-action-summary"></div>
+                        <ul class="rec-list" id="rec-list"></ul>
+                    </div>
+
+                    <!-- PDF Download button -->
+                    <a class="btn-pdf" id="pdf-download-btn" href="/download_report" target="_blank">
+                        📄 Download Detailed PDF Report
+                    </a>
+
+                    <div class="pipeline-info">
+                        <span>Preprocessing: Ben Graham 224×224</span>
+                        <span id="text-class-id">Class ID: --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput      = document.getElementById('file-input');
+        const dropzone       = document.getElementById('dropzone');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg     = document.getElementById('preview-img');
+        const analyzeBtn     = document.getElementById('analyze-btn');
+        const btnSpinner     = document.getElementById('btn-spinner');
+        const btnText        = document.getElementById('btn-text');
+        const resultEmpty    = document.getElementById('result-empty');
+        const resultContent  = document.getElementById('result-content');
+        const badgePrediction = document.getElementById('badge-prediction');
+        const textConfidence = document.getElementById('text-confidence');
+        const textClassId    = document.getElementById('text-class-id');
+        const probBars       = document.getElementById('prob-bars');
+        const urgencyBadge   = document.getElementById('urgency-badge');
+        const recSection     = document.getElementById('rec-section');
+        const recActionSummary = document.getElementById('rec-action-summary');
+        const recList        = document.getElementById('rec-list');
+        const pdfBtn         = document.getElementById('pdf-download-btn');
+        const patientNameInput = document.getElementById('patient-name');
+
+        let selectedFile = null;
+
+        // Map class index to color
+        const DR_COLORS = ['#10b981','#eab308','#f97316','#ef4444','#881337'];
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]);
+        });
+
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+        });
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewImg.src = e.target.result;
+                previewContainer.style.display = 'flex';
+                analyzeBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            btnSpinner.style.display = 'inline-block';
+            btnText.textContent = 'Processing & Inferring...';
+            analyzeBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            // Send patient name if provided
+            const pName = patientNameInput.value.trim();
+            if (pName) formData.append('patient_name', pName);
+
+            try {
+                const response = await fetch('/predict', { method: 'POST', body: formData });
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Server responded with status ' + response.status);
+                }
+                const data = await response.json();
+                renderResults(data);
+            } catch (err) {
+                alert('Analysis Error: ' + err.message);
+            } finally {
+                btnSpinner.style.display = 'none';
+                btnText.textContent = 'Run Diagnostic Inference';
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        function renderResults(data) {
+            resultEmpty.style.display = 'none';
+            resultContent.style.display = 'block';
+
+            const classId = data.class_id ?? 0;
+            const color   = DR_COLORS[classId] || '#06b6d4';
+
+            // Prediction badge
+            const predLabel = data.prediction || data.severity_label;
+            badgePrediction.textContent = predLabel;
+            badgePrediction.style.backgroundColor = color + '25';
+            badgePrediction.style.color = color;
+            badgePrediction.style.border = `1px solid ${color}60`;
+
+            // Confidence
+            const conf = typeof data.confidence === 'number' ? data.confidence.toFixed(2) + '%' : data.confidence_percentage;
+            textConfidence.textContent = conf;
+            textClassId.textContent = `Class ID: ${classId}`;
+
+            // Urgency badge
+            const rec = data.recommendations || {};
+            const urgencyText  = rec.urgency || '';
+            const urgencyColor = rec.urgency_color || '#94a3b8';
+            if (urgencyText) {
+                urgencyBadge.textContent = '⚠ Urgency: ' + urgencyText;
+                urgencyBadge.style.backgroundColor = urgencyColor + '22';
+                urgencyBadge.style.color = urgencyColor;
+                urgencyBadge.style.border = `1px solid ${urgencyColor}55`;
+            }
+
+            // Probability bars
+            probBars.innerHTML = '';
+            const breakdown = data.class_probability_breakdown || data.probabilities || {};
+            let i = 0;
+            for (const [cls, prob] of Object.entries(breakdown)) {
+                const barColor = DR_COLORS[i++] || '#38bdf8';
+                const probVal  = typeof prob === 'number' ? prob.toFixed(1) : parseFloat(prob).toFixed(1);
+                const item = document.createElement('div');
+                item.className = 'prob-item';
+                item.innerHTML = `
+                    <div class="prob-labels">
+                        <span>${cls}</span>
+                        <span style="color:${barColor}">${probVal}%</span>
+                    </div>
+                    <div class="prob-bar-bg">
+                        <div class="prob-bar-fill" style="width:${probVal}%;background:${barColor}"></div>
+                    </div>
+                `;
+                probBars.appendChild(item);
+            }
+
+            // Clinical Recommendations
+            if (rec.action_summary) {
+                recActionSummary.textContent = rec.action_summary;
+                recList.innerHTML = '';
+                (rec.recommendations || []).forEach(r => {
+                    const li = document.createElement('li');
+                    li.textContent = r;
+                    recList.appendChild(li);
+                });
+                recSection.style.display = 'block';
+            }
+
+            // PDF download button
+            pdfBtn.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
